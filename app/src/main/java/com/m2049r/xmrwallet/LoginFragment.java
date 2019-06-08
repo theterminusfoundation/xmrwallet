@@ -179,7 +179,7 @@ public class LoginFragment extends Fragment implements WalletInfoAdapter.OnInter
         recyclerView.setAdapter(adapter);
 
         ViewGroup llNotice = view.findViewById(R.id.llNotice);
-        Notice.showAll(llNotice, ".*_login");
+        //vc Notice.showAll(llNotice, ".*_login");
 
         pbNode = view.findViewById(R.id.pbNode);
         llNode = view.findViewById(R.id.llNode);

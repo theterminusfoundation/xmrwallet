@@ -314,6 +314,10 @@ public class Helper {
         }
     }
 
+    static public HttpUrl getVotingChainBaseUrl(String relativePath) { //vc
+        return HttpUrl.parse("http://127.0.0.1:3000/" + relativePath);
+    }
+
     private final static char[] HexArray = "0123456789ABCDEF".toCharArray();
 
     public static String bytesToHex(byte[] data) {

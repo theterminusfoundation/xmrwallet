@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 import com.m2049r.xmrwallet.xmrto.api.CreateOrder;
 import com.m2049r.xmrwallet.xmrto.api.XmrToCallback;
 
+import org.json.JSONArray; //vc
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,6 +76,11 @@ class CreateOrderImpl implements CreateOrder {
                     } catch (JSONException ex) {
                         callback.onError(ex);
                     }
+                }
+
+                @Override
+                public void onSuccess(JSONArray jsonObject) { //vc
+
                 }
 
                 @Override

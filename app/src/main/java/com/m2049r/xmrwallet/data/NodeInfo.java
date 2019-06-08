@@ -46,7 +46,8 @@ import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 public class NodeInfo extends Node {
-    final static public int MIN_MAJOR_VERSION = 11;
+    //vc final static public int MIN_MAJOR_VERSION = 11;
+    final static public int MIN_MAJOR_VERSION = 1; //vc
     final static public String RPC_VERSION = "2.0";
 
     private long height = 0;
@@ -251,7 +252,8 @@ public class NodeInfo extends Node {
         return false;
     }
 
-    static final private int[] TEST_PORTS = {18089}; // check only opt-in port
+    //vc static final private int[] TEST_PORTS = {18089}; // check only opt-in port
+    static final private int[] TEST_PORTS = {30011, 30021, 30031, 30041, 30051};
 
     public boolean findRpcService() {
         // if already have an rpcPort, use that
@@ -259,8 +261,10 @@ public class NodeInfo extends Node {
         // otherwise try to find one
         for (int port : TEST_PORTS) {
             if (testRpcService(port)) { // found a service
+                /* //vc
                 this.rpcPort = port;
-                return true;
+                return true; */
+                return false; //vc
             }
         }
         return false;

@@ -17,11 +17,13 @@
 package com.m2049r.xmrwallet.xmrto.network;
 
 import org.json.JSONObject;
+import org.json.JSONArray; //vc
 
-interface NetworkCallback {
+//vc interface NetworkCallback {
+public interface NetworkCallback { //vc
 
     void onSuccess(JSONObject jsonObject);
-
+    void onSuccess(JSONArray jsonObject); //vc
     void onError(Exception ex);
 
 }

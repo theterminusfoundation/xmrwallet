@@ -156,7 +156,8 @@ public class NodeFragment extends Fragment
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (WalletManager.getInstance().getNetworkType() == NetworkType.NetworkType_Mainnet) {
+                //vc if (WalletManager.getInstance().getNetworkType() == NetworkType.NetworkType_Mainnet) {
+                    if (WalletManager.getInstance().getNetworkType() == NetworkType.NetworkType_Stagenet) {
                     refresh();
                 } else {
                     Toast.makeText(getActivity(), getString(R.string.node_wrong_net), Toast.LENGTH_LONG).show();
@@ -171,7 +172,7 @@ public class NodeFragment extends Fragment
         nodesAdapter.setNodes(nodeList);
 
         ViewGroup llNotice = view.findViewById(R.id.llNotice);
-        Notice.showAll(llNotice, ".*_nodes");
+        //vc Notice.showAll(llNotice, ".*_nodes");
 
         return view;
     }
@@ -258,6 +259,7 @@ public class NodeFragment extends Fragment
                     }
                 });
                 // also seed with monero seed nodes (see p2p/net_node.inl:410 in monero src)
+                /* //vc
                 seedList.add(new NodeInfo(new InetSocketAddress("107.152.130.98", 18080)));
                 seedList.add(new NodeInfo(new InetSocketAddress("212.83.175.67", 18080)));
                 seedList.add(new NodeInfo(new InetSocketAddress("5.9.100.248", 18080)));
@@ -266,6 +268,7 @@ public class NodeFragment extends Fragment
                 seedList.add(new NodeInfo(new InetSocketAddress("198.74.231.92", 18080)));
                 seedList.add(new NodeInfo(new InetSocketAddress("195.154.123.123", 18080)));
                 seedList.add(new NodeInfo(new InetSocketAddress("212.83.172.165", 18080)));
+                */
                 d.seedPeers(seedList);
                 d.awaitTermination(NODES_TO_FIND);
             }

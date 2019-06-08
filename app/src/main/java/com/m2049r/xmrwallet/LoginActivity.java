@@ -648,7 +648,8 @@ public class LoginActivity extends BaseActivity
                 toolbar.setBackgroundResource(R.color.colorPrimaryDark);
                 break;
             case NetworkType_Stagenet:
-                toolbar.setSubtitle(getString(R.string.connect_stagenet));
+                //vc toolbar.setSubtitle(getString(R.string.connect_stagenet));
+                toolbar.setTitle("Voting-Chain"); //vc
                 toolbar.setBackgroundResource(R.color.colorPrimaryDark);
                 break;
             default:
@@ -933,7 +934,8 @@ public class LoginActivity extends BaseActivity
                         final long restoreHeight =
                                 (currentNode != null) ? currentNode.getHeight() - 20 : -1;
                         Wallet newWallet = WalletManager.getInstance()
-                                .createWallet(aFile, password, MNEMONIC_LANGUAGE, restoreHeight);
+                                //vc .createWallet(aFile, password, MNEMONIC_LANGUAGE, restoreHeight);
+                                .createWallet(aFile, password, MNEMONIC_LANGUAGE);
                         boolean success = (newWallet.getStatus() == Wallet.Status.Status_Ok);
                         if (!success) {
                             Timber.e(newWallet.getErrorString());

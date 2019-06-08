@@ -54,7 +54,8 @@ import com.m2049r.xmrwallet.fragment.send.SendAddressWizardFragment;
 import com.m2049r.xmrwallet.fragment.send.SendFragment;
 import com.m2049r.xmrwallet.ledger.LedgerProgressDialog;
 import com.m2049r.xmrwallet.model.PendingTransaction;
-import com.m2049r.xmrwallet.model.TransactionInfo;
+//vc import com.m2049r.xmrwallet.model.TransactionInfo;
+import com.m2049r.xmrwallet.model.CandidateInfo; //vc
 import com.m2049r.xmrwallet.model.Wallet;
 import com.m2049r.xmrwallet.model.WalletManager;
 import com.m2049r.xmrwallet.service.WalletService;
@@ -242,8 +243,11 @@ public class WalletActivity extends BaseActivity implements WalletFragment.Liste
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem renameItem = menu.findItem(R.id.action_rename);
-        if (renameItem != null)
-            renameItem.setVisible(hasWallet() && getWallet().isSynchronized());
+        if (renameItem != null) {
+            //vc renameItem.setVisible(hasWallet() && getWallet().isSynchronized());
+            Wallet wallet = getWallet(); //vc
+            renameItem.setVisible(hasWallet() && (wallet != null && wallet.isSynchronized())); //vc
+        }
         MenuItem streetmodeItem = menu.findItem(R.id.action_streetmode);
         if (streetmodeItem != null)
             if (isStreetMode()) {
@@ -530,11 +534,17 @@ public class WalletActivity extends BaseActivity implements WalletFragment.Liste
         uri = null; // only use uri once
     }
 
+    /* //vc
     @Override
     public void onTxDetailsRequest(TransactionInfo info) {
         Bundle args = new Bundle();
         args.putParcelable(TxFragment.ARG_INFO, info);
         replaceFragment(new TxFragment(), null, args);
+    } */
+
+    //vc
+    @Override
+    public void onTxDetailsRequest(CandidateInfo info) { //vc
     }
 
     @Override
@@ -561,7 +571,8 @@ public class WalletActivity extends BaseActivity implements WalletFragment.Liste
                 updateAccountsBalance();
             }
         });
-        if (numAccounts != wallet.getNumAccounts()) {
+        //vc if (numAccounts != wallet.getNumAccounts()) {
+        if (wallet != null && numAccounts != wallet.getNumAccounts()) {
             numAccounts = wallet.getNumAccounts();
             runOnUiThread(new Runnable() {
                 public void run() {
@@ -572,7 +583,8 @@ public class WalletActivity extends BaseActivity implements WalletFragment.Liste
         try {
             final WalletFragment walletFragment = (WalletFragment)
                     getSupportFragmentManager().findFragmentByTag(WalletFragment.class.getName());
-            if (wallet.isSynchronized()) {
+            //vc if (wallet.isSynchronized()) {
+            if (wallet != null && wallet.isSynchronized()) {
                 Timber.d("onRefreshed() synced");
                 releaseWakeLock(RELEASE_WAKE_LOCK_DELAY); // the idea is to stay awake until synced
                 if (!synced) { // first sync
@@ -588,7 +600,10 @@ public class WalletActivity extends BaseActivity implements WalletFragment.Liste
             }
             runOnUiThread(new Runnable() {
                 public void run() {
-                    walletFragment.onRefreshed(wallet, full);
+                    //vc walletFragment.onRefreshed(wallet, full);
+                    if(wallet != null) {
+                        walletFragment.onRefreshed(wallet, full); 
+                    }
                 }
             });
             return true;
@@ -1032,36 +1047,42 @@ public class WalletActivity extends BaseActivity implements WalletFragment.Liste
     void updateAccountsBalance() {
         final TextView tvBalance = accountsView.getHeaderView(0).findViewById(R.id.tvBalance);
         if (!isStreetMode()) {
-            tvBalance.setText(getString(R.string.accounts_balance,
-                    Helper.getDisplayAmount(getWallet().getBalanceAll(), 5)));
+            //vc tvBalance.setText(getString(R.string.accounts_balance, Helper.getDisplayAmount(getWallet().getBalanceAll(), 5)));
+
         } else {
-            tvBalance.setText(null);
+            //vc tvBalance.setText(null);
         }
         updateAccountsList();
     }
 
     void updateAccountsHeader() {
         final Wallet wallet = getWallet();
-        final TextView tvName = accountsView.getHeaderView(0).findViewById(R.id.tvName);
-        tvName.setText(wallet.getName());
+        //vc final TextView tvName = accountsView.getHeaderView(0).findViewById(R.id.tvName);
+        //vc tvName.setText(wallet.getName());
+        if(wallet != null) { //vc
+            final TextView tvName = accountsView.getHeaderView(0).findViewById(R.id.tvName);
+            tvName.setText(wallet.getName());
+        }
     }
 
-    void updateAccountsList() {
-        final Wallet wallet = getWallet();
-        Menu menu = accountsView.getMenu();
-        menu.removeGroup(R.id.accounts_list);
-        final int n = wallet.getNumAccounts();
-        final boolean showBalances = (n > 1) && !isStreetMode();
-        for (int i = 0; i < n; i++) {
-            final String label = (showBalances ?
-                    getString(R.string.label_account, wallet.getAccountLabel(i), Helper.getDisplayAmount(wallet.getBalance(i), 2))
-                    : wallet.getAccountLabel(i));
-            final MenuItem item = menu.add(R.id.accounts_list, getAccountId(i), 2 * i, label);
-            item.setIcon(R.drawable.ic_account_balance_wallet_black_24dp);
-            if (i == wallet.getAccountIndex())
-                item.setChecked(true);
+    void updateAccountsList() { 
+        if(wallet != null) { //vc
+            final Wallet wallet = getWallet();
+            Menu menu = accountsView.getMenu();
+            menu.removeGroup(R.id.accounts_list);
+            final int n = wallet.getNumAccounts();
+            final boolean showBalances = (n > 1) && !isStreetMode();
+            for (int i = 0; i < n; i++) {
+                final String label = (showBalances ?
+                        getString(R.string.label_account, wallet.getAccountLabel(i), Helper.getDisplayAmount(wallet.getBalance(i), 2))
+                        : wallet.getAccountLabel(i));
+                final MenuItem item = menu.add(R.id.accounts_list, getAccountId(i), 2 * i, label);
+                item.setIcon(R.drawable.ic_account_balance_wallet_black_24dp);
+                if (i == wallet.getAccountIndex())
+                    item.setChecked(true);
+            }
+            menu.setGroupCheckable(R.id.accounts_list, true, true);
         }
-        menu.setGroupCheckable(R.id.accounts_list, true, true);
     }
 
     @Override
@@ -1089,6 +1110,8 @@ public class WalletActivity extends BaseActivity implements WalletFragment.Liste
         final EditText etRename = promptsView.findViewById(R.id.etRename);
         final TextView tvRenameLabel = promptsView.findViewById(R.id.tvRenameLabel);
         final Wallet wallet = getWallet();
+        if(wallet == null) //vc
+            return; //vc
         tvRenameLabel.setText(getString(R.string.prompt_rename, wallet.getAccountLabel()));
 
         // set dialog message

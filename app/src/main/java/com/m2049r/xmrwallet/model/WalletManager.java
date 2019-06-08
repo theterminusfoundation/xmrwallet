@@ -16,10 +16,28 @@
 
 package com.m2049r.xmrwallet.model;
 
+//vc begin add
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+
+import com.m2049r.xmrwallet.WalletActivity; 
+import com.m2049r.xmrwallet.util.Helper;
+import com.m2049r.xmrwallet.xmrto.api.VotingChainApi;
+import com.m2049r.xmrwallet.xmrto.network.VotingChainApiImpl;
+import com.m2049r.xmrwallet.xmrto.network.NetworkCallback;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import com.m2049r.xmrwallet.util.OkHttpHelper;
+import org.json.JSONObject; //vc end-add
+
 import com.m2049r.xmrwallet.XmrWalletApplication;
 import com.m2049r.xmrwallet.data.Node;
 import com.m2049r.xmrwallet.ledger.Ledger;
+
 import com.m2049r.xmrwallet.util.RestoreHeight;
+
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,6 +49,7 @@ import java.util.Date;
 import java.util.List;
 
 import timber.log.Timber;
+import static android.content.Context.MODE_PRIVATE; //vc
 
 public class WalletManager {
 
@@ -91,18 +110,49 @@ public class WalletManager {
         managedWallet = null;
     }
 
-    public Wallet createWallet(File aFile, String password, String language, long height) {
+    //vc public Wallet createWallet(File aFile, String password, String language, long height) {
+        public Wallet createWallet(File aFile, String password, String language, Context context) {
         long walletHandle = createWalletJ(aFile.getAbsolutePath(), password, language, getNetworkType().getValue());
         Wallet wallet = new Wallet(walletHandle);
         manageWallet(wallet);
-        if (wallet.getStatus() == Wallet.Status.Status_Ok) {
+        if (wallet.getStatus() == Wallet.Status.Status_Ok) { //vc add
+            SharedPreferences sp = context.getSharedPreferences(wallet.getName(), MODE_PRIVATE);
+            SharedPreferences.Editor edit = sp.edit();
+            edit.putInt("voted", 0);
+            edit.apply(); //vc end-add
+
             // (Re-)Estimate restore height based on what we know
             final long oldHeight = wallet.getRestoreHeight();
             final long restoreHeight =
                     (height > -1) ? height : RestoreHeight.getInstance().getHeight(new Date());
-            wallet.setRestoreHeight(restoreHeight);
+            //vc wallet.setRestoreHeight(restoreHeight);
+            wallet.setRestoreHeight(0);
             Timber.d("Changed Restore Height from %d to %d", oldHeight, wallet.getRestoreHeight());
             wallet.setPassword(password); // this rewrites the keys file (which contains the restore height)
+            //vc add
+            try {
+                JSONObject req = createRequest(wallet.getName(), wallet.getAddress());
+                getVotingChainApi("voter/add").call("", req, new NetworkCallback() {
+                    @Override
+                    public void onSuccess(JSONObject json) {
+                        Timber.d("getVotingChainApi - voter add success");
+                    }
+
+                    @Override
+                    public void onSuccess(JSONArray jsonObject) {
+
+                    }
+
+                    @Override
+                    public void onError(Exception ex) {
+                        Timber.d("getVotingChainApi - voter add error");
+                        ex.printStackTrace();
+                    }
+                });
+           }
+            catch (JSONException ex) {
+               Timber.d(ex.getLocalizedMessage());
+            } //vc end-add
         }
         return wallet;
     }
@@ -353,4 +403,26 @@ public class WalletManager {
     static public native void logWarning(String category, String message);
 
     static public native void logError(String category, String message);
+
+    //vc add
+    private VotingChainApi vcApi = null;
+
+    private final VotingChainApi getVotingChainApi(String relativePath) {
+        if (vcApi == null) {
+            synchronized (this) {
+                if (vcApi == null) {
+                    vcApi = new VotingChainApiImpl(OkHttpHelper.getOkHttpClient(),
+                            Helper.getVotingChainBaseUrl(relativePath));
+                }
+            }
+        }
+        return vcApi;
+    }
+
+    static JSONObject createRequest(final String name, final String address) throws JSONException {
+        final JSONObject jsonObject = new JSONObject();
+        jsonObject.put("name", name);
+        jsonObject.put("address", address);
+        return jsonObject;
+    } //Vc end-add
 }

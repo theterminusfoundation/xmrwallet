@@ -408,4 +408,15 @@ public class Wallet {
 
     private native int getDeviceTypeJ();
 
+    //vc add
+    private boolean voted = false;
+
+    public boolean getVoted() {
+        return voted;
+    }
+
+    public void setVoted(boolean vote) {
+        voted = vote;
+    } //vc end-add
+
 }
